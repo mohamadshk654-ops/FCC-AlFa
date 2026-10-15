@@ -28,7 +28,7 @@
         <span id="toastText">تمت العملية بنجاح</span>
     </div>
 
-    <!-- أزرار الدعم الثلاثية المتنقلة عبر الصفحات (واتساب + فيسبوك + تلجرام) -->
+    <!-- أزرار الدعم الثلاثية المتنقلة عبر الصفحات -->
     <div class="fixed bottom-20 left-4 z-50 flex flex-col space-y-2">
         <a href="https://wa.me/" target="_blank" title="دعم واتساب" class="bg-emerald-500 text-white p-3 rounded-full shadow-2xl hover:scale-110 transition flex items-center justify-center border-2 border-slate-900 shadow-emerald-500/30">
             <i class="fa-brands fa-whatsapp text-xl"></i>
@@ -326,24 +326,13 @@
                     <div class="flex justify-between items-center border-b border-slate-800 pb-4">
                         <div>
                             <h3 class="text-xl font-bold text-white"><i class="fa-solid fa-clock-rotate-left text-amber-400 ml-2"></i> سجل كافة الأنشطة والعمليات</h3>
-                            <p class="text-xs text-slate-400 mt-0.5">سجل زمني لجميع التحويلات والاشتراكات والمهمات الحسابية</p>
+                            <p class="text-xs text-slate-400 mt-0.5">سجل زمني دائم لجميع التحويلات والاشتراكات والمهمات الحسابية</p>
                         </div>
-                        <span class="bg-emerald-500/10 text-emerald-400 text-xs px-3 py-1 rounded-full font-bold">مُزامن فورياً</span>
+                        <span class="bg-emerald-500/10 text-emerald-400 text-xs px-3 py-1 rounded-full font-bold">محفوظ ودائم</span>
                     </div>
 
                     <div id="historyLogsList" class="space-y-3">
-                        <div class="bg-slate-950 p-3.5 rounded-xl border border-slate-800 flex justify-between items-center text-xs">
-                            <div class="flex items-center space-x-3 space-x-reverse">
-                                <div class="bg-blue-500/10 text-blue-400 p-2.5 rounded-lg">
-                                    <i class="fa-solid fa-user-plus"></i>
-                                </div>
-                                <div>
-                                    <strong class="text-white block font-semibold">إنشاء وسجل جديد للحساب</strong>
-                                    <span class="text-slate-400 text-[10px]">تم تسجيل وتفعيل معرف الحساب بنجاح في المنصة</span>
-                                </div>
-                            </div>
-                            <span class="text-slate-500 text-[10px]">الآن</span>
-                        </div>
+                        <!-- يتم تعبئتها ديناميكياً من الذاكرة المحلية المستمرة -->
                     </div>
                 </div>
             </div>
@@ -657,10 +646,11 @@
         </div>
     </div>
 
-    <!-- السكربت البرمجي المحمي والمصحح بالكامل -->
+    <!-- السكربت البرمجي المحمي والمصحح بالكامل بقاعدة بيانات دائمـة والسجل الدائم -->
     <script>
         let isRegister = false;
         let currentUser = JSON.parse(localStorage.getItem('fcc_user')) || null;
+        let usersDb = JSON.parse(localStorage.getItem('fcc_users_db')) || {};
         let pendingDeposit = JSON.parse(localStorage.getItem('fcc_pending_dep')) || null;
         let pendingWithdraw = JSON.parse(localStorage.getItem('fcc_pending_with')) || null;
         let pendingKyc = JSON.parse(localStorage.getItem('fcc_pending_kyc')) || null;
@@ -673,32 +663,76 @@
 
         window.onload = function() {
             if (currentUser) {
+                // مزامنة بيانات المستخدم مع قاعدة البيانات الدائمة
+                if (usersDb[currentUser.email]) {
+                    currentUser = usersDb[currentUser.email];
+                } else {
+                    usersDb[currentUser.email] = currentUser;
+                    localStorage.setItem('fcc_users_db', JSON.stringify(usersDb));
+                }
                 renderUserSession();
                 checkPendingAdminStates();
                 checkTaskTimerOnLoad();
+                loadHistoryLogs();
             }
         };
 
-        function addHistoryLog(title, desc, iconClass, colorClass) {
+        function saveUsersDb() {
+            if (currentUser) {
+                usersDb[currentUser.email] = currentUser;
+                localStorage.setItem('fcc_users_db', JSON.stringify(usersDb));
+                localStorage.setItem('fcc_user', JSON.stringify(currentUser));
+            }
+        }
+
+        function addHistoryLog(title, desc, iconClass, colorClass, targetEmail = null) {
+            const emailKey = targetEmail || (currentUser ? currentUser.email : 'default');
+            const logKey = `fcc_logs_${emailKey}`;
+            let logs = JSON.parse(localStorage.getItem(logKey)) || [];
+
+            const timeNow = new Date().toLocaleTimeString('ar-EG', { hour: '2-digit', minute: '2-digit', day: 'numeric', month: 'numeric' });
+            logs.unshift({ title, desc, iconClass, colorClass, time: timeNow });
+            localStorage.setItem(logKey, JSON.stringify(logs));
+
+            if (!targetEmail || (currentUser && currentUser.email === targetEmail)) {
+                renderHistoryLogs(logs);
+            }
+        }
+
+        function loadHistoryLogs() {
+            if (!currentUser) return;
+            const logKey = `fcc_logs_${currentUser.email}`;
+            let logs = JSON.parse(localStorage.getItem(logKey)) || [];
+            renderHistoryLogs(logs);
+        }
+
+        function renderHistoryLogs(logs) {
             const list = document.getElementById('historyLogsList');
             if (!list) return;
+            list.innerHTML = '';
 
-            const timeNow = new Date().toLocaleTimeString('ar-EG', { hour: '2-digit', minute: '2-digit' });
-            const logItem = document.createElement('div');
-            logItem.className = 'bg-slate-950 p-3.5 rounded-xl border border-slate-800 flex justify-between items-center text-xs';
-            logItem.innerHTML = `
-                <div class="flex items-center space-x-3 space-x-reverse">
-                    <div class="${colorClass} p-2.5 rounded-lg">
-                        <i class="${iconClass}"></i>
+            if (logs.length === 0) {
+                list.innerHTML = `<div class="text-center text-xs text-slate-500 py-4">لا توجد عمليات مسجلة حتى الآن</div>`;
+                return;
+            }
+
+            logs.forEach(log => {
+                const item = document.createElement('div');
+                item.className = 'bg-slate-950 p-3.5 rounded-xl border border-slate-800 flex justify-between items-center text-xs';
+                item.innerHTML = `
+                    <div class="flex items-center space-x-3 space-x-reverse">
+                        <div class="${log.colorClass} p-2.5 rounded-lg">
+                            <i class="${log.iconClass}"></i>
+                        </div>
+                        <div>
+                            <strong class="text-white block font-semibold">${log.title}</strong>
+                            <span class="text-slate-400 text-[10px]">${log.desc}</span>
+                        </div>
                     </div>
-                    <div>
-                        <strong class="text-white block font-semibold">${title}</strong>
-                        <span class="text-slate-400 text-[10px]">${desc}</span>
-                    </div>
-                </div>
-                <span class="text-slate-500 text-[10px]">${timeNow}</span>
-            `;
-            list.prepend(logItem);
+                    <span class="text-slate-500 text-[10px]">${log.time}</span>
+                `;
+                list.appendChild(item);
+            });
         }
 
         function showToast(text) {
@@ -741,8 +775,11 @@
                     balance: 1500.00,
                     activePlans: 2,
                     dailyPlanProfit: 7.00,
+                    isVerified: true,
                     isAdmin: true
                 };
+                usersDb[email] = currentUser;
+                localStorage.setItem('fcc_users_db', JSON.stringify(usersDb));
                 localStorage.setItem('fcc_user', JSON.stringify(currentUser));
                 showToast("تم تسجيل دخول الأدمن بنجاح");
                 setTimeout(() => {
@@ -752,21 +789,31 @@
                 return;
             }
 
-            const name = isRegister ? (document.getElementById('fullName').value || 'مستثمر جديد') : 'مستثمر FCC';
-            currentUser = {
-                name: name,
-                email: email,
-                balance: currentUser ? currentUser.balance : 0,
-                activePlans: currentUser ? currentUser.activePlans : 0,
-                dailyPlanProfit: currentUser ? currentUser.dailyPlanProfit : 0.20,
-                isAdmin: false
-            };
+            if (usersDb[email]) {
+                currentUser = usersDb[email];
+            } else {
+                const name = isRegister ? (document.getElementById('fullName').value || 'مستثمر جديد') : 'مستثمر FCC';
+                currentUser = {
+                    name: name,
+                    email: email,
+                    balance: 0,
+                    activePlans: 0,
+                    dailyPlanProfit: 0.20,
+                    isVerified: false,
+                    isAdmin: false
+                };
+                usersDb[email] = currentUser;
+                addHistoryLog("إنشاء الحساب", "تم تسجيل وتفعيل معرف الحساب بنجاح في المنصة", "fa-solid fa-user-plus", "bg-blue-500/10 text-blue-400", email);
+            }
+
+            localStorage.setItem('fcc_users_db', JSON.stringify(usersDb));
             localStorage.setItem('fcc_user', JSON.stringify(currentUser));
 
             showToast(isRegister ? "تم إنشاء حساب جديد بنجاح" : "تم تسجيل الدخول بنجاح");
             setTimeout(() => {
                 renderUserSession();
                 switchPage('home');
+                loadHistoryLogs();
             }, 1000);
         }
 
@@ -785,6 +832,17 @@
             document.getElementById('totalBalance').innerText = currentUser.balance.toFixed(2);
             document.getElementById('withdrawBalance').innerText = currentUser.balance.toFixed(2);
             document.getElementById('activePlansCount').innerText = currentUser.activePlans;
+
+            if (currentUser.isVerified) {
+                const badge = document.getElementById('kycBadgeBtn');
+                badge.className = "bg-emerald-500/20 text-emerald-400 border border-emerald-500/40 text-[11px] font-bold px-3 py-1.5 rounded-xl flex items-center space-x-1.5 space-x-reverse transition";
+                document.getElementById('kycIcon').className = "fa-solid fa-circle-check";
+                document.getElementById('kycStatusText').innerText = "تم التحقق";
+                document.getElementById('homeAccountKycText').className = "text-emerald-400";
+                document.getElementById('homeAccountKycText').innerText = "تم التحقق";
+                document.getElementById('accountKycBadge').className = "block mt-1 bg-emerald-500/10 text-emerald-400 border border-emerald-500/20 text-[10px] px-2.5 py-0.5 rounded-full w-fit font-bold";
+                document.getElementById('accountKycBadge').innerText = "حساب موثق بالكامل";
+            }
 
             if (currentUser.isAdmin) {
                 document.getElementById('adminPortalBtn').classList.remove('hidden');
@@ -818,6 +876,7 @@
 
             const activeNav = document.getElementById('nav-' + pageId);
             if (activeNav) activeNav.classList.add('text-emerald-400');
+            if (pageId === 'history') loadHistoryLogs();
         }
 
         function openModal(id) { document.getElementById(id).classList.remove('hidden'); }
@@ -836,6 +895,7 @@
                     const reader2 = new FileReader();
                     reader2.onload = function(e2) {
                         pendingKyc = {
+                            userEmail: currentUser.email,
                             name: currentUser.name,
                             country: country,
                             frontImg: e1.target.result,
@@ -871,7 +931,7 @@
             if (pendingKyc) {
                 document.getElementById('adminKycEmptyText').classList.add('hidden');
                 document.getElementById('adminKycCardContent').classList.remove('hidden');
-                document.getElementById('adminUserKycName').innerText = `المستخدم: ${pendingKyc.name}`;
+                document.getElementById('adminUserKycName').innerText = `المستخدم: ${pendingKyc.name} (${pendingKyc.userEmail})`;
                 document.getElementById('adminUserKycCountry').innerText = `الدولة: ${pendingKyc.country}`;
                 document.getElementById('adminFrontPreview').src = pendingKyc.frontImg;
                 document.getElementById('adminBackPreview').src = pendingKyc.backImg;
@@ -883,7 +943,7 @@
             if (pendingDeposit) {
                 document.getElementById('adminDepositEmptyText').classList.add('hidden');
                 document.getElementById('adminDepositCardContent').classList.remove('hidden');
-                document.getElementById('adminDepTitle').innerText = `طلب إيداع بقيمة $${pendingDeposit.amount}`;
+                document.getElementById('adminDepTitle').innerText = `طلب إيداع بقيمة $${pendingDeposit.amount} (${pendingDeposit.userEmail})`;
                 document.getElementById('adminDepNetworkInfo').innerText = `الشبكة المختارة: ${pendingDeposit.network}`;
             } else {
                 document.getElementById('adminDepositEmptyText').classList.remove('hidden');
@@ -893,7 +953,7 @@
             if (pendingWithdraw) {
                 document.getElementById('adminWithdrawEmptyText').classList.add('hidden');
                 document.getElementById('adminWithdrawCardContent').classList.remove('hidden');
-                document.getElementById('adminWithAmountText').innerText = `طلب سحب مبلغ: $${pendingWithdraw.amount}`;
+                document.getElementById('adminWithAmountText').innerText = `طلب سحب مبلغ: $${pendingWithdraw.amount} (${pendingWithdraw.userEmail})`;
                 document.getElementById('adminWithNetText').innerText = `الشبكة: ${pendingWithdraw.network}`;
                 document.getElementById('adminWithWalletDisplay').innerText = pendingWithdraw.wallet;
             } else {
@@ -903,22 +963,24 @@
         }
 
         function approveKYC() {
-            const badge = document.getElementById('kycBadgeBtn');
-            badge.className = "bg-emerald-500/20 text-emerald-400 border border-emerald-500/40 text-[11px] font-bold px-3 py-1.5 rounded-xl flex items-center space-x-1.5 space-x-reverse transition";
-            document.getElementById('kycIcon').className = "fa-solid fa-circle-check";
-            document.getElementById('kycStatusText').innerText = "تم التحقق";
-            
-            document.getElementById('homeAccountKycText').className = "text-emerald-400";
-            document.getElementById('homeAccountKycText').innerText = "تم التحقق";
-            document.getElementById('accountKycBadge').className = "block mt-1 bg-emerald-500/10 text-emerald-400 border border-emerald-500/20 text-[10px] px-2.5 py-0.5 rounded-full w-fit font-bold";
-            document.getElementById('accountKycBadge').innerText = "حساب موثق بالكامل";
+            if (pendingKyc) {
+                const targetEmail = pendingKyc.userEmail;
+                if (usersDb[targetEmail]) {
+                    usersDb[targetEmail].isVerified = true;
+                }
+                if (currentUser && currentUser.email === targetEmail) {
+                    currentUser.isVerified = true;
+                    renderUserSession();
+                }
+                saveUsersDb();
+
+                addHistoryLog("قبول توثيق الحساب", "تمت موافقة الأدمن على توثيق الهوية رسميّاً", "fa-solid fa-circle-check", "bg-emerald-500/10 text-emerald-400", targetEmail);
+            }
 
             pendingKyc = null;
             localStorage.removeItem('fcc_pending_kyc');
             checkPendingAdminStates();
-
-            addHistoryLog("قبول توثيق الحساب", "تمت موافقة الأدمن على توثيق الهوية رسميّاً", "fa-solid fa-circle-check", "bg-emerald-500/10 text-emerald-400");
-            showToast("تمت موافقة التوثيق وإزالة الطلب بنجاح!");
+            showToast("تمت موافقة التوثيق وتحديث حساب المستخدم بنجاح!");
         }
 
         function rejectKYC() {
@@ -952,6 +1014,8 @@
                 return;
             }
             pendingDeposit = {
+                userEmail: currentUser.email,
+                name: currentUser.name,
                 amount: parseFloat(amt),
                 network: document.getElementById('depositNetworkSelect').value
             };
@@ -964,18 +1028,26 @@
         }
 
         function approveDeposit() {
-            if (pendingDeposit && currentUser) {
-                currentUser.balance += pendingDeposit.amount;
-                localStorage.setItem('fcc_user', JSON.stringify(currentUser));
-                renderUserSession();
+            if (pendingDeposit) {
+                const targetEmail = pendingDeposit.userEmail;
+                const depAmount = pendingDeposit.amount;
 
-                addHistoryLog("تأكيد إيداع ورصيد", `تمت إضافة $${pendingDeposit.amount} إلى رصيد حسابك بعد موافقة الأدمن`, "fa-solid fa-circle-dollar-to-slot", "bg-emerald-500/10 text-emerald-400");
+                if (usersDb[targetEmail]) {
+                    usersDb[targetEmail].balance += depAmount;
+                }
+                if (currentUser && currentUser.email === targetEmail) {
+                    currentUser.balance += depAmount;
+                    renderUserSession();
+                }
+                saveUsersDb();
+
+                addHistoryLog("تأكيد إيداع ورصيد", `تمت إضافة $${depAmount} إلى رصيد حسابك بعد موافقة الأدمن`, "fa-solid fa-circle-dollar-to-slot", "bg-emerald-500/10 text-emerald-400", targetEmail);
                 
                 pendingDeposit = null;
                 localStorage.removeItem('fcc_pending_dep');
                 checkPendingAdminStates();
 
-                showToast("تمت الموافقة وإضافة الرصيد بنجاح وإزالة الطلب!");
+                showToast("تمت الموافقة وإضافة الرصيد لحساب المستخدم بنجاح!");
             }
         }
 
@@ -1005,10 +1077,12 @@
             }
 
             currentUser.balance -= amt;
-            localStorage.setItem('fcc_user', JSON.stringify(currentUser));
+            saveUsersDb();
             renderUserSession();
 
             pendingWithdraw = {
+                userEmail: currentUser.email,
+                name: currentUser.name,
                 amount: amt,
                 network: net,
                 wallet: wallet
@@ -1036,12 +1110,20 @@
         }
 
         function rejectWithdraw() {
-            if (pendingWithdraw && currentUser) {
-                currentUser.balance += pendingWithdraw.amount;
-                localStorage.setItem('fcc_user', JSON.stringify(currentUser));
-                renderUserSession();
+            if (pendingWithdraw) {
+                const targetEmail = pendingWithdraw.userEmail;
+                const refAmount = pendingWithdraw.amount;
 
-                addHistoryLog("رفض طلب سحب", `تم رفض طلب السحب وإعادة المبلغ ($${pendingWithdraw.amount}) لحسابك`, "fa-solid fa-rotate-left", "bg-rose-500/10 text-rose-400");
+                if (usersDb[targetEmail]) {
+                    usersDb[targetEmail].balance += refAmount;
+                }
+                if (currentUser && currentUser.email === targetEmail) {
+                    currentUser.balance += refAmount;
+                    renderUserSession();
+                }
+                saveUsersDb();
+
+                addHistoryLog("رفض طلب سحب", `تم رفض طلب السحب وإعادة المبلغ ($${refAmount}) لحسابك`, "fa-solid fa-rotate-left", "bg-rose-500/10 text-rose-400", targetEmail);
 
                 pendingWithdraw = null;
                 localStorage.removeItem('fcc_pending_with');
@@ -1059,8 +1141,8 @@
 
             currentUser.balance -= price;
             currentUser.activePlans += 1;
-            currentUser.dailyPlanProfit = dailyProfit; // ضبط دقيق لعائد الباقة اليومي فقط
-            localStorage.setItem('fcc_user', JSON.stringify(currentUser));
+            currentUser.dailyPlanProfit = dailyProfit;
+            saveUsersDb();
             renderUserSession();
 
             addHistoryLog("اشتراك في باقة", `تم الخصم والاشتراك في (${planName}) بقيمة $${price} (عائد يومي صحيح: $${dailyProfit})`, "fa-solid fa-box-archive", "bg-indigo-500/10 text-indigo-400");
@@ -1123,9 +1205,9 @@
             btn.disabled = true;
             btn.classList.add('opacity-50', 'cursor-not-allowed');
 
-            const taskProfit = currentUser.dailyPlanProfit || 0.20; // العائد اليومي الصحيح للباقة
+            const taskProfit = currentUser.dailyPlanProfit || 0.20;
             currentUser.balance += taskProfit;
-            localStorage.setItem('fcc_user', JSON.stringify(currentUser));
+            saveUsersDb();
             renderUserSession();
 
             document.getElementById('todayEarnings').innerText = `$${taskProfit.toFixed(2)}`;
