@@ -1,1 +1,698 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>منصة FCC-AlFa الاستثمارية</title>
+    <!-- Tailwind CSS -->
+    <script src="https://cdn.jsdelivr.net/npm/@tailwindcss/browser@4"></script>
+    <!-- Google Fonts Cairo -->
+    <link href="https://fonts.googleapis.com/css2?family=Cairo:wght@300;400;600;700;800;900&display=swap" rel="stylesheet">
+    <!-- FontAwesome Icons -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <style>
+        body { font-family: 'Cairo', sans-serif; }
+        .glass-card { background: rgba(15, 23, 42, 0.8); backdrop-filter: blur(12px); }
+    </style>
+</head>
+<body class="bg-slate-950 text-slate-100 min-h-screen flex flex-col selection:bg-emerald-500 selection:text-slate-950">
 
+    <!-- شريط التنقل العلوي -->
+    <header class="bg-slate-900/90 backdrop-blur-md border-b border-slate-800 sticky top-0 z-50">
+        <div class="max-w-7xl mx-auto px-4 py-3 flex justify-between items-center">
+            
+            <!-- أعلى الزاوية اليمنى: اسم المستخدم وزر حالة التوثيق -->
+            <div id="headerUserBlock" class="hidden items-center space-x-3 space-x-reverse">
+                <div class="bg-slate-800 p-2 rounded-xl border border-slate-700 flex items-center space-x-2 space-x-reverse">
+                    <i class="fa-solid fa-user-circle text-amber-400 text-xl"></i>
+                    <span id="headerUserName" class="text-xs font-bold text-white">المستخدم</span>
+                </div>
+                <!-- زر حالة التوثيق -->
+                <button id="kycBadgeBtn" onclick="openKycStep1()" class="bg-rose-500/20 hover:bg-rose-500/30 text-rose-400 border border-rose-500/40 text-[11px] font-bold px-3 py-1.5 rounded-xl flex items-center space-x-1.5 space-x-reverse transition shadow-lg shadow-rose-500/10">
+                    <i id="kycIcon" class="fa-solid fa-triangle-exclamation"></i>
+                    <span id="kycStatusText">لم يتم التحقق - اضغط للتحقق</span>
+                </button>
+            </div>
+
+            <!-- اللوجو للجهة اليسرى عند عدم تسجيل الدخول -->
+            <div id="logoBlock" class="flex items-center space-x-2 space-x-reverse">
+                <div class="bg-gradient-to-tr from-amber-500 to-emerald-500 p-2 rounded-xl text-slate-950 font-black text-lg shadow-lg shadow-emerald-500/20">
+                    <i class="fa-solid fa-chart-line"></i>
+                </div>
+                <span class="text-xl font-black bg-gradient-to-r from-amber-400 to-emerald-400 bg-clip-text text-transparent">FCC-AlFa</span>
+            </div>
+
+            <div class="flex items-center space-x-3 space-x-reverse">
+                <!-- زر تغيير اللغة -->
+                <button onclick="toggleLang()" class="bg-slate-800 hover:bg-slate-700 px-3 py-1.5 rounded-lg text-xs font-bold text-amber-400 border border-slate-700 transition">
+                    <i class="fa-solid fa-globe ml-1"></i> <span id="langText">EN / AR</span>
+                </button>
+                <!-- زر الإشعارات -->
+                <button onclick="openModal('notificationsModal')" class="relative bg-slate-800 hover:bg-slate-700 p-2 rounded-lg text-slate-300 border border-slate-700 transition">
+                    <i class="fa-solid fa-bell text-lg"></i>
+                    <span class="absolute -top-1 -right-1 bg-rose-500 text-white text-[10px] w-4 h-4 rounded-full flex items-center justify-center font-bold">3</span>
+                </button>
+            </div>
+        </div>
+    </header>
+
+    <!-- المحتوى الرئيسي للمنصة -->
+    <main class="flex-grow max-w-7xl w-full mx-auto p-4 md:p-6 mb-20">
+
+        <!-- 1. شاشة تسجيل الدخول / إنشاء حساب -->
+        <div id="authScreen" class="max-w-md mx-auto my-8 bg-slate-900 border border-slate-800 rounded-2xl p-6 shadow-2xl relative overflow-hidden">
+            <div class="absolute -top-10 -right-10 w-32 h-32 bg-emerald-500/10 rounded-full blur-2xl"></div>
+            <div class="text-center mb-6">
+                <h2 id="authTitle" class="text-2xl font-black text-white mb-2">تسجيل الدخول إلى FCC-AlFa</h2>
+                <p class="text-slate-400 text-xs">مرحباً بك في المنصة الاستثمارية الرائدة</p>
+            </div>
+
+            <form id="authForm" onsubmit="handleAuth(event)" class="space-y-4">
+                <div id="registerFields" class="hidden space-y-4">
+                    <div>
+                        <label class="block text-xs text-slate-400 mb-1">الاسم الكامل</label>
+                        <input type="text" id="fullName" class="w-full bg-slate-950 border border-slate-800 rounded-xl px-4 py-3 text-xs focus:border-emerald-500 focus:outline-none">
+                    </div>
+                    <div>
+                        <label class="block text-xs text-slate-400 mb-1">رابط أو كود الدعوة (اختياري)</label>
+                        <input type="text" id="inviteCode" placeholder="مثال: ALFA9988" class="w-full bg-slate-950 border border-slate-800 rounded-xl px-4 py-3 text-xs focus:border-emerald-500 focus:outline-none">
+                    </div>
+                </div>
+
+                <div>
+                    <label class="block text-xs text-slate-400 mb-1">البريد الإلكتروني</label>
+                    <input type="email" id="userEmail" required placeholder="name@example.com" class="w-full bg-slate-950 border border-slate-800 rounded-xl px-4 py-3 text-xs focus:border-emerald-500 focus:outline-none">
+                </div>
+                <div>
+                    <label class="block text-xs text-slate-400 mb-1">كلمة المرور</label>
+                    <input type="password" id="userPassword" required placeholder="••••••••" class="w-full bg-slate-950 border border-slate-800 rounded-xl px-4 py-3 text-xs focus:border-emerald-500 focus:outline-none">
+                </div>
+
+                <button type="submit" class="w-full bg-gradient-to-r from-emerald-500 to-emerald-600 hover:from-emerald-600 hover:to-emerald-700 text-slate-950 font-black py-3 rounded-xl shadow-lg shadow-emerald-500/20 transition text-xs">
+                    <span id="authBtnText">دخول</span>
+                </button>
+
+                <div class="text-center pt-2">
+                    <button type="button" onclick="toggleAuthMode()" class="text-xs text-emerald-400 hover:underline" id="authSwitchText">
+                        ليس لديك حساب؟ انشئ حساباً جديداً الآن
+                    </button>
+                </div>
+            </form>
+        </div>
+
+        <!-- التطبيق الرئيسي (يظهر بعد تسجيل الدخول) -->
+        <div id="mainApp" class="hidden space-y-6">
+
+            <!-- صفحة 1: الرئيسية -->
+            <div id="page-home" class="space-y-6">
+                
+                <!-- النص الإعلاني لزيادة ثقة العملاء -->
+                <div class="bg-gradient-to-r from-amber-500/10 via-emerald-500/10 to-indigo-500/10 border border-emerald-500/20 rounded-2xl p-4 flex items-center space-x-4 space-x-reverse shadow-lg">
+                    <div class="bg-emerald-500/20 text-emerald-400 p-3 rounded-xl text-xl animate-pulse">
+                        <i class="fa-solid fa-shield-check"></i>
+                    </div>
+                    <div>
+                        <h4 class="font-bold text-xs text-emerald-400">إعلان الأمان والتراخيص المالية</h4>
+                        <p class="text-[11px] text-slate-300 mt-0.5">تضمن منصة FCC-AlFa أعلى درجات الحماية وتشفير الأصول المالية بأرقام تسلسلية لامركزية. أرباحك وسحوباتك مضمونة 100% وبشكل آلي ومباشر.</p>
+                    </div>
+                </div>
+
+                <!-- بطاقات الأرصدة -->
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                    <!-- رصيد الحساب -->
+                    <div class="bg-slate-900 border border-slate-800 rounded-2xl p-6 relative overflow-hidden shadow-xl">
+                        <div class="absolute -left-6 -bottom-6 w-32 h-32 bg-emerald-500/10 rounded-full blur-2xl"></div>
+                        <span class="text-xs text-slate-400 font-semibold">رصيد الحساب الإجمالي</span>
+                        <h2 class="text-3xl font-black text-white mt-2">$<span id="totalBalance">1,450.00</span></h2>
+                        <div class="mt-4 flex space-x-3 space-x-reverse">
+                            <button onclick="openModal('depositModal')" class="flex-1 bg-emerald-500 hover:bg-emerald-600 text-slate-950 font-bold py-2.5 rounded-xl text-xs transition shadow-md shadow-emerald-500/20">
+                                <i class="fa-solid fa-wallet ml-1"></i> إيداع
+                            </button>
+                            <button onclick="openModal('withdrawModal')" class="flex-1 bg-slate-800 hover:bg-slate-700 text-white border border-slate-700 font-bold py-2.5 rounded-xl text-xs transition">
+                                <i class="fa-solid fa-arrow-up-right-from-square ml-1"></i> سحب
+                            </button>
+                        </div>
+                    </div>
+
+                    <!-- الرصيد القابل للسحب -->
+                    <div class="bg-slate-900 border border-slate-800 rounded-2xl p-6 relative overflow-hidden shadow-xl">
+                        <div class="absolute -left-6 -bottom-6 w-32 h-32 bg-amber-500/10 rounded-full blur-2xl"></div>
+                        <span class="text-xs text-slate-400 font-semibold">الرصيد القابل للسحب الفوري</span>
+                        <h2 class="text-3xl font-black text-amber-400 mt-2">$<span id="withdrawBalance">380.50</span></h2>
+                        <div class="mt-4 flex items-center justify-between text-xs text-slate-400 bg-slate-950 p-3 rounded-xl border border-slate-800">
+                            <span>حالة الحساب: <strong id="homeAccountKycText" class="text-rose-400">غير موثق</strong></span>
+                            <span class="text-amber-400"><i class="fa-solid fa-bolt ml-1"></i> سحب فوري</span>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- إحصائيات سريعة -->
+                <div class="grid grid-cols-3 gap-4 text-center">
+                    <div class="bg-slate-900 border border-slate-800 p-4 rounded-2xl">
+                        <span class="text-[11px] text-slate-400 block">أرباح اليوم</span>
+                        <span class="text-lg font-bold text-emerald-400 mt-1 block">+$24.20</span>
+                    </div>
+                    <div class="bg-slate-900 border border-slate-800 p-4 rounded-2xl">
+                        <span class="text-[11px] text-slate-400 block">الباقات النشطة</span>
+                        <span class="text-lg font-bold text-indigo-400 mt-1 block">2 باقات</span>
+                    </div>
+                    <div class="bg-slate-900 border border-slate-800 p-4 rounded-2xl">
+                        <span class="text-[11px] text-slate-400 block">أرباح الفريق</span>
+                        <span class="text-lg font-bold text-amber-400 mt-1 block">+$115.00</span>
+                    </div>
+                </div>
+            </div>
+
+            <!-- صفحة 2: الاستثمار (تتوفل كل 24 ساعة) -->
+            <div id="page-investment" class="hidden space-y-6">
+                <div class="bg-slate-900 border border-slate-800 rounded-2xl p-6 text-center space-y-4 shadow-xl">
+                    <div class="w-20 h-20 bg-emerald-500/10 border border-emerald-500/20 text-emerald-400 rounded-full flex items-center justify-center mx-auto text-3xl shadow-lg shadow-emerald-500/10 animate-pulse">
+                        <i class="fa-solid fa-microchip"></i>
+                    </div>
+                    <h3 class="text-xl font-bold text-white">مهمة التعدين وتوليد الأرباح اليومية</h3>
+                    <p class="text-xs text-slate-400 max-w-md mx-auto">عند تفعيل أي باقة استثمارية، يمكنك الضغط هنا مرة كل 24 ساعة لتشغيل الخوارزمية وتحويل العوائد مباشرة إلى رصيدك القابل للسحب.</p>
+                    
+                    <div class="bg-slate-950 p-4 rounded-xl border border-slate-800 max-w-sm mx-auto">
+                        <span class="text-xs text-slate-400 block">الوقت المتبقي للـ 24 ساعة القادمة:</span>
+                        <div id="countdownTimer" class="text-2xl font-black text-amber-400 mt-1">23:59:40</div>
+                    </div>
+
+                    <button onclick="claimDailyTask()" id="taskBtn" class="bg-gradient-to-r from-emerald-500 to-emerald-600 hover:from-emerald-600 hover:to-emerald-700 text-slate-950 font-black px-8 py-3 rounded-xl shadow-lg shadow-emerald-500/20 transition text-xs">
+                        تفعيل المهمة وتحصيل أرباح الباقات
+                    </button>
+                </div>
+            </div>
+
+            <!-- صفحة 3: الاشتراكات (الباقات الاستثمارية من 20$ إلى 500$) -->
+            <div id="page-subscriptions" class="space-y-6 hidden">
+                <div class="text-center">
+                    <h3 class="text-2xl font-black text-white">باقات الاستثمار المتاحة</h3>
+                    <p class="text-xs text-slate-400 mt-1">اختر الباقة المناسبة لميزانيتك بمدة 30 يوماً لكل باقة</p>
+                </div>
+
+                <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
+                    <!-- باقة 1 -->
+                    <div class="bg-slate-900 border border-slate-800 rounded-2xl p-6 flex flex-col justify-between hover:border-emerald-500/50 transition shadow-xl">
+                        <div>
+                            <span class="bg-emerald-500/10 text-emerald-400 text-xs px-3 py-1 rounded-full font-bold">باقة الفئة الأولى</span>
+                            <h4 class="text-2xl font-black text-white mt-4">$20 <span class="text-xs text-slate-400 font-normal">/ 30 يوماً</span></h4>
+                            <ul class="mt-6 space-y-3 text-xs text-slate-300">
+                                <li><i class="fa-solid fa-check text-emerald-400 ml-2"></i> الربح اليومي: <strong>1.8%</strong></li>
+                                <li><i class="fa-solid fa-check text-emerald-400 ml-2"></i> العائد اليومي: <strong>$0.36</strong></li>
+                                <li><i class="fa-solid fa-check text-emerald-400 ml-2"></i> الربح الكلي: <strong>$30.80</strong></li>
+                            </ul>
+                        </div>
+                        <button onclick="subscribePlan(20, 'الفئة الأولى')" class="mt-6 w-full bg-slate-800 hover:bg-emerald-500 hover:text-slate-950 text-white font-bold py-2.5 rounded-xl text-xs transition border border-slate-700">اشتراك الآن</button>
+                    </div>
+
+                    <!-- باقة 2 -->
+                    <div class="bg-slate-900 border border-emerald-500/50 rounded-2xl p-6 flex flex-col justify-between shadow-2xl relative">
+                        <div class="absolute -top-3 left-1/2 -translate-x-1/2 bg-emerald-500 text-slate-950 font-black text-[10px] px-3 py-0.5 rounded-full uppercase">الأكثر شعبية</div>
+                        <div>
+                            <span class="bg-indigo-500/10 text-indigo-400 text-xs px-3 py-1 rounded-full font-bold">باقة الفئة المتوسطة</span>
+                            <h4 class="text-2xl font-black text-white mt-4">$150 <span class="text-xs text-slate-400 font-normal">/ 30 يوماً</span></h4>
+                            <ul class="mt-6 space-y-3 text-xs text-slate-300">
+                                <li><i class="fa-solid fa-check text-emerald-400 ml-2"></i> الربح اليومي: <strong>4.5%</strong></li>
+                                <li><i class="fa-solid fa-check text-emerald-400 ml-2"></i> العائد اليومي: <strong>$6.75</strong></li>
+                                <li><i class="fa-solid fa-check text-emerald-400 ml-2"></i> الربح الكلي: <strong>$352.50</strong></li>
+                            </ul>
+                        </div>
+                        <button onclick="subscribePlan(150, 'الفئة المتوسطة')" class="mt-6 w-full bg-emerald-500 hover:bg-emerald-600 text-slate-950 font-black py-2.5 rounded-xl text-xs transition shadow-lg shadow-emerald-500/20">اشتراك الآن</button>
+                    </div>
+
+                    <!-- باقة 3 -->
+                    <div class="bg-slate-900 border border-slate-800 rounded-2xl p-6 flex flex-col justify-between hover:border-amber-500/50 transition shadow-xl">
+                        <div>
+                            <span class="bg-amber-500/10 text-amber-400 text-xs px-3 py-1 rounded-full font-bold">الباقة المتقدمة AlFa</span>
+                            <h4 class="text-2xl font-black text-white mt-4">$500 <span class="text-xs text-slate-400 font-normal">/ 30 يوماً</span></h4>
+                            <ul class="mt-6 space-y-3 text-xs text-slate-300">
+                                <li><i class="fa-solid fa-check text-emerald-400 ml-2"></i> الربح اليومي: <strong>10%</strong></li>
+                                <li><i class="fa-solid fa-check text-emerald-400 ml-2"></i> العائد اليومي: <strong>$50.00</strong></li>
+                                <li><i class="fa-solid fa-check text-emerald-400 ml-2"></i> الربح الكلي: <strong>$2,000.00</strong></li>
+                            </ul>
+                        </div>
+                        <button onclick="subscribePlan(500, 'الباقة المتقدمة AlFa')" class="mt-6 w-full bg-slate-800 hover:bg-amber-500 hover:text-slate-950 text-white font-bold py-2.5 rounded-xl text-xs transition border border-slate-700">اشتراك الآن</button>
+                    </div>
+                </div>
+            </div>
+
+            <!-- صفحة 4: الفريق (دعوة الأصدقاء بنسبة 3% ثابتة) -->
+            <div id="page-team" class="space-y-6 hidden">
+                <div class="bg-slate-900 border border-slate-800 rounded-2xl p-6 space-y-6 shadow-xl">
+                    <div class="text-center">
+                        <h3 class="text-2xl font-bold text-white">نظام الإحالات وشريكة الفريق</h3>
+                        <p class="text-xs text-slate-400 mt-1">شارِك رابط الدعوة واحصل على عمولة ثابتة قدرها <strong>3%</strong> عن كل إيداع أو استثمار يقوم به فريقك.</p>
+                    </div>
+
+                    <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                        <div class="bg-slate-950 p-4 rounded-xl border border-slate-800">
+                            <span class="text-xs text-slate-400 block mb-1">كود الدعوة الخاص بك</span>
+                            <div class="flex items-center justify-between bg-slate-900 px-3 py-2 rounded-lg border border-slate-800">
+                                <span class="font-mono font-bold text-amber-400" id="userInviteCode">ALFA-77892</span>
+                                <button onclick="copyText('ALFA-77892')" class="text-xs bg-slate-800 hover:bg-slate-700 px-3 py-1 rounded text-white"><i class="fa-solid fa-copy"></i></button>
+                            </div>
+                        </div>
+
+                        <div class="bg-slate-950 p-4 rounded-xl border border-slate-800">
+                            <span class="text-xs text-slate-400 block mb-1">رابط الدعوة المباشر</span>
+                            <div class="flex items-center justify-between bg-slate-900 px-3 py-2 rounded-lg border border-slate-800">
+                                <span class="font-mono text-xs text-slate-300 truncate" id="userInviteLink">https://fcc-alfa.com/ref=77892</span>
+                                <button onclick="copyText('https://fcc-alfa.com/ref=77892')" class="text-xs bg-slate-800 hover:bg-slate-700 px-3 py-1 rounded text-white"><i class="fa-solid fa-copy"></i></button>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="grid grid-cols-3 gap-4 text-center border-t border-slate-800 pt-6">
+                        <div>
+                            <span class="text-xs text-slate-400 block">إجمالي أعضاء الفريق</span>
+                            <span class="text-lg font-bold text-white mt-1 block">14 عضو</span>
+                        </div>
+                        <div>
+                            <span class="text-xs text-slate-400 block">أرباح عمولة الفريق</span>
+                            <span class="text-lg font-bold text-emerald-400 mt-1 block">$115.00</span>
+                        </div>
+                        <div>
+                            <span class="text-xs text-slate-400 block">نسبة الإحالة الثابتة</span>
+                            <span class="text-lg font-bold text-amber-400 mt-1 block">3%</span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- صفحة 5: حسابي (معلومات المستخدم الكاملة) -->
+            <div id="page-account" class="space-y-6 hidden">
+                <div class="bg-slate-900 border border-slate-800 rounded-2xl p-6 space-y-6 max-w-xl mx-auto shadow-xl">
+                    <div class="flex items-center space-x-4 space-x-reverse">
+                        <div class="w-16 h-16 bg-gradient-to-tr from-amber-500 to-emerald-500 rounded-full flex items-center justify-center text-slate-950 font-black text-2xl shadow-lg">
+                            <i class="fa-solid fa-user"></i>
+                        </div>
+                        <div>
+                            <h3 class="text-xl font-bold text-white" id="accName">اسم المستخدم</h3>
+                            <span class="text-xs text-slate-400" id="accEmail">user@fcc-alfa.com</span>
+                            <span id="accountKycBadge" class="block mt-1 bg-rose-500/10 text-rose-400 border border-rose-500/20 text-[10px] px-2.5 py-0.5 rounded-full w-fit font-bold">الحساب غير موثق</span>
+                        </div>
+                    </div>
+
+                    <div class="space-y-3 border-t border-slate-800 pt-4">
+                        <div class="flex justify-between text-xs bg-slate-950 p-3 rounded-xl border border-slate-800">
+                            <span class="text-slate-400">رقم معرف الحساب (UID):</span>
+                            <span class="font-mono font-bold text-white">884920</span>
+                        </div>
+                        <div class="flex justify-between text-xs bg-slate-950 p-3 rounded-xl border border-slate-800">
+                            <span class="text-slate-400">تاريخ التسجيل:</span>
+                            <span class="font-bold text-white">2026/10/15</span>
+                        </div>
+                        <div class="flex justify-between text-xs bg-slate-950 p-3 rounded-xl border border-slate-800">
+                            <span class="text-slate-400">الدولة الموثقة:</span>
+                            <span class="font-bold text-amber-400" id="accCountry">غير محددة</span>
+                        </div>
+                    </div>
+
+                    <button onclick="logout()" class="w-full bg-rose-500/10 hover:bg-rose-500/20 text-rose-400 border border-rose-500/30 font-bold py-3 rounded-xl text-xs transition flex items-center justify-center space-x-2 space-x-reverse">
+                        <i class="fa-solid fa-right-from-bracket"></i>
+                        <span>تسجيل الخروج من الحساب</span>
+                    </button>
+                </div>
+            </div>
+
+            <!-- صفحة 6: الأدمن (المدير nnnnnaaatttnanooo@gmail.com) -->
+            <div id="page-admin" class="space-y-6 hidden">
+                <div class="bg-slate-900 border border-amber-500/30 rounded-2xl p-6 space-y-6 shadow-2xl">
+                    <div class="flex justify-between items-center border-b border-slate-800 pb-4">
+                        <div>
+                            <h3 class="text-xl font-bold text-amber-400"><i class="fa-solid fa-user-shield ml-2"></i> لوحة تحكم الأدمن (المشرف العام)</h3>
+                            <span class="text-xs text-slate-400">البريد الإلكتروني المعتمد: <strong>nnnnnaaatttnanooo@gmail.com</strong></span>
+                        </div>
+                        <span class="bg-amber-500/10 text-amber-400 text-xs px-3 py-1 rounded-full font-bold">صلاحيات الإدارة</span>
+                    </div>
+
+                    <!-- طلبات التوثيق والهويات -->
+                    <div class="space-y-4">
+                        <h4 class="text-sm font-bold text-white">طلبات توثيق الهوية المعلقة (KYC)</h4>
+                        
+                        <div id="adminKycCard" class="bg-slate-950 p-4 rounded-xl border border-slate-800 space-y-4">
+                            <div class="flex justify-between items-center">
+                                <div>
+                                    <span class="text-xs text-white font-bold block" id="adminUserKycName">المستخدم: مستثمر FCC</span>
+                                    <span class="text-[11px] text-slate-400" id="adminUserKycCountry">الدولة: المملكة العربية السعودية</span>
+                                </div>
+                                <span class="bg-amber-500/10 text-amber-400 text-[10px] px-2 py-0.5 rounded font-bold">بانتظار التحقق</span>
+                            </div>
+
+                            <!-- معاينة صور الهوية -->
+                            <div class="grid grid-cols-2 gap-4">
+                                <div class="bg-slate-900 border border-slate-800 p-3 rounded-lg text-center">
+                                    <span class="text-[10px] text-slate-400 block mb-2">صورة الوجه الأمامي</span>
+                                    <img id="adminFrontPreview" src="https://via.placeholder.com/300x180/1e293b/94a3b8?text=ID+Front+Side" class="w-full h-24 object-cover rounded border border-slate-700">
+                                </div>
+                                <div class="bg-slate-900 border border-slate-800 p-3 rounded-lg text-center">
+                                    <span class="text-[10px] text-slate-400 block mb-2">صورة الوجه الخلفي</span>
+                                    <img id="adminBackPreview" src="https://via.placeholder.com/300x180/1e293b/94a3b8?text=ID+Back+Side" class="w-full h-24 object-cover rounded border border-slate-700">
+                                </div>
+                            </div>
+
+                            <div class="flex space-x-3 space-x-reverse pt-2">
+                                <button onclick="approveKYC()" class="flex-1 bg-emerald-500 hover:bg-emerald-600 text-slate-950 font-bold py-2 rounded-lg text-xs transition">
+                                    <i class="fa-solid fa-check ml-1"></i> موافقة على التوثيق
+                                </button>
+                                <button onclick="rejectKYC()" class="flex-1 bg-rose-500 hover:bg-rose-600 text-white font-bold py-2 rounded-lg text-xs transition">
+                                    <i class="fa-solid fa-xmark ml-1"></i> رفض الطلب
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- طلبات الإيداع والسحب -->
+                    <div class="space-y-4 pt-4 border-t border-slate-800">
+                        <h4 class="text-sm font-bold text-white">طلبات الإيداع والسحب</h4>
+                        <div class="bg-slate-950 p-4 rounded-xl border border-slate-800 flex justify-between items-center">
+                            <div>
+                                <span class="text-xs text-white font-bold block">طلب إيداع $500 (USDT - TRC20)</span>
+                                <span class="text-[11px] text-slate-400">المرسل: سارة علي | Hash: 0x992...4a1</span>
+                            </div>
+                            <div class="flex space-x-2 space-x-reverse">
+                                <button onclick="alert('تم قبول الإيداع')" class="bg-emerald-500 hover:bg-emerald-600 text-slate-950 font-bold px-3 py-1.5 rounded text-xs">قبول</button>
+                                <button onclick="alert('تم الرفض')" class="bg-rose-500 hover:bg-rose-600 text-white font-bold px-3 py-1.5 rounded text-xs">رفض</button>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+        </div>
+    </main>
+
+    <!-- شريط التنقل السفلي -->
+    <nav id="bottomNav" class="hidden fixed bottom-0 left-0 right-0 bg-slate-900/95 backdrop-blur-md border-t border-slate-800 py-3 z-40">
+        <div class="max-w-md mx-auto flex justify-around items-center text-slate-400 text-xs">
+            <button onclick="switchPage('home')" id="nav-home" class="flex flex-col items-center hover:text-emerald-400 text-emerald-400 transition">
+                <i class="fa-solid fa-house text-lg mb-1"></i>
+                <span>الرئيسية</span>
+            </button>
+            <button onclick="switchPage('investment')" id="nav-investment" class="flex flex-col items-center hover:text-emerald-400 transition">
+                <i class="fa-solid fa-bolt text-lg mb-1"></i>
+                <span>الاستثمار</span>
+            </button>
+            <button onclick="switchPage('subscriptions')" id="nav-subscriptions" class="flex flex-col items-center hover:text-emerald-400 transition">
+                <i class="fa-solid fa-box-archive text-lg mb-1"></i>
+                <span>الاشتراكات</span>
+            </button>
+            <button onclick="switchPage('team')" id="nav-team" class="flex flex-col items-center hover:text-emerald-400 transition">
+                <i class="fa-solid fa-users text-lg mb-1"></i>
+                <span>الفريق</span>
+            </button>
+            <button onclick="switchPage('account')" id="nav-account" class="flex flex-col items-center hover:text-emerald-400 transition">
+                <i class="fa-solid fa-user-gear text-lg mb-1"></i>
+                <span>حسابي</span>
+            </button>
+        </div>
+    </nav>
+
+    <!-- النوافذ المنبثقة (MODALS) -->
+
+    <!-- نافذة التوثيق الخطوة 1 -->
+    <div id="kycModal1" class="fixed inset-0 bg-slate-950/80 backdrop-blur-sm hidden z-50 flex items-center justify-center p-4">
+        <div class="bg-slate-900 border border-slate-800 rounded-2xl max-w-md w-full p-6 space-y-4 shadow-2xl text-center">
+            <div class="w-16 h-16 bg-amber-500/10 text-amber-400 rounded-full flex items-center justify-center mx-auto text-2xl border border-amber-500/20">
+                <i class="fa-solid fa-id-card"></i>
+            </div>
+            <h3 class="text-lg font-bold text-white">توثيق الهوية (KYC)</h3>
+            <p class="text-xs text-slate-300">توثيق الحساب يحمي أصولك المالية ويضمن لك إجراء سحوبات فورية بدون أي قيود.</p>
+            <button onclick="closeModal('kycModal1'); openModal('kycModal2');" class="w-full bg-emerald-500 hover:bg-emerald-600 text-slate-950 font-bold py-3 rounded-xl text-xs transition">
+                البدء في إجراءات التوثيق الآن
+            </button>
+        </div>
+    </div>
+
+    <!-- نافذة التوثيق الخطوة 2 (رفع الصور واختيار الدولة) -->
+    <div id="kycModal2" class="fixed inset-0 bg-slate-950/80 backdrop-blur-sm hidden z-50 flex items-center justify-center p-4">
+        <div class="bg-slate-900 border border-slate-800 rounded-2xl max-w-md w-full p-6 space-y-4 shadow-2xl">
+            <div class="flex justify-between items-center border-b border-slate-800 pb-3">
+                <h3 class="text-sm font-bold text-white"><i class="fa-solid fa-passport text-emerald-400 ml-1"></i> رفع بيانات الهوية الوطنية</h3>
+                <button onclick="closeModal('kycModal2')" class="text-slate-400 hover:text-white"><i class="fa-solid fa-xmark"></i></button>
+            </div>
+
+            <div class="space-y-3">
+                <div>
+                    <label class="block text-xs text-slate-400 mb-1">اختر الدولة</label>
+                    <select id="kycCountrySelect" class="w-full bg-slate-950 border border-slate-800 rounded-xl px-3 py-2 text-xs text-white">
+                        <option value="السعودية">المملكة العربية السعودية</option>
+                        <option value="الإمارات">الإمارات العربية المتحدة</option>
+                        <option value="الأردن">الأردن</option>
+                        <option value="مصر">جمهورية مصر العربية</option>
+                        <option value="الكويت">الكويت</option>
+                        <option value="قطر">قطر</option>
+                        <option value="دولة أخرى">دولة أخرى</option>
+                    </select>
+                </div>
+
+                <div>
+                    <label class="block text-xs text-slate-400 mb-1">صورة الهوية (الوجه الأمامي)</label>
+                    <input type="file" id="frontImgInput" accept="image/*" class="w-full bg-slate-950 border border-slate-800 rounded-xl px-3 py-2 text-xs text-slate-400">
+                </div>
+
+                <div>
+                    <label class="block text-xs text-slate-400 mb-1">صورة الهوية (الوجه الخلفي)</label>
+                    <input type="file" id="backImgInput" accept="image/*" class="w-full bg-slate-950 border border-slate-800 rounded-xl px-3 py-2 text-xs text-slate-400">
+                </div>
+            </div>
+
+            <button onclick="submitKycForReview()" class="w-full bg-gradient-to-r from-emerald-500 to-emerald-600 text-slate-950 font-bold py-3 rounded-xl text-xs transition">
+                إرسال الهوية للمراجعة
+            </button>
+        </div>
+    </div>
+
+    <!-- نافذة الإيداع المنبثقة -->
+    <div id="depositModal" class="fixed inset-0 bg-slate-950/80 backdrop-blur-sm hidden z-50 flex items-center justify-center p-4">
+        <div class="bg-slate-900 border border-slate-800 rounded-2xl max-w-md w-full p-6 space-y-4 shadow-2xl">
+            <div class="flex justify-between items-center">
+                <h3 class="text-lg font-bold text-white"><i class="fa-solid fa-wallet text-emerald-400 ml-2"></i> إيداع الأموال</h3>
+                <button onclick="closeModal('depositModal')" class="text-slate-400 hover:text-white"><i class="fa-solid fa-xmark"></i></button>
+            </div>
+            <div class="bg-emerald-500/10 border border-emerald-500/20 p-3 rounded-xl text-xs text-emerald-400">
+                استثمر بثقة تامة! أرباحك مضمونة ومحمية بنسبة 100%. الحد الأدنى للإيداع هو <strong>$1</strong> فقط.
+            </div>
+            <div class="space-y-3">
+                <div class="bg-slate-950 p-3 rounded-xl border border-slate-800">
+                    <span class="text-xs font-bold text-amber-400 block mb-1">1. USDT (TRC20)</span>
+                    <span class="font-mono text-[11px] text-slate-300 select-all">T9yD14Nj9j7xAB4dbGeiX9h8unkKHxuWwb</span>
+                </div>
+                <div class="bg-slate-950 p-3 rounded-xl border border-slate-800">
+                    <span class="text-xs font-bold text-indigo-400 block mb-1">2. USDT (BEP20)</span>
+                    <span class="font-mono text-[11px] text-slate-300 select-all">0x71C...392a819b7d41</span>
+                </div>
+                <div class="bg-slate-950 p-3 rounded-xl border border-slate-800">
+                    <span class="text-xs font-bold text-blue-400 block mb-1">3. Bitcoin (BTC)</span>
+                    <span class="font-mono text-[11px] text-slate-300 select-all">bc1qxy2kgdygjrsqtzq2n0yrf2493p83kkfjhx0wlh</span>
+                </div>
+            </div>
+            <button onclick="closeModal('depositModal'); alert('تم إرسال طلب الإيداع للأدمن للتأكيد');" class="w-full bg-emerald-500 hover:bg-emerald-600 text-slate-950 font-bold py-3 rounded-xl text-xs">تم إجراء التحويل</button>
+        </div>
+    </div>
+
+    <!-- نافذة السحب المنبثقة -->
+    <div id="withdrawModal" class="fixed inset-0 bg-slate-950/80 backdrop-blur-sm hidden z-50 flex items-center justify-center p-4">
+        <div class="bg-slate-900 border border-slate-800 rounded-2xl max-w-md w-full p-6 space-y-4 shadow-2xl">
+            <div class="flex justify-between items-center">
+                <h3 class="text-lg font-bold text-white"><i class="fa-solid fa-arrow-up-right-from-square text-amber-400 ml-2"></i> سحب الأرباح</h3>
+                <button onclick="closeModal('withdrawModal')" class="text-slate-400 hover:text-white"><i class="fa-solid fa-xmark"></i></button>
+            </div>
+            <div class="bg-amber-500/10 border border-amber-500/20 p-3 rounded-xl text-xs text-amber-400">
+                سحوبات فورية ومباشرة لمحفظتك! اختر الشبكة وأدخل الكمية.
+            </div>
+            <div class="space-y-3">
+                <div>
+                    <label class="block text-xs text-slate-400 mb-1">شبكة السحب</label>
+                    <select class="w-full bg-slate-950 border border-slate-800 rounded-xl px-4 py-2 text-xs text-white">
+                        <option>USDT - TRC20</option>
+                        <option>USDT - BEP20</option>
+                        <option>Bitcoin Network</option>
+                    </select>
+                </div>
+                <div>
+                    <label class="block text-xs text-slate-400 mb-1">عنوان محفظتك</label>
+                    <input type="text" placeholder="الصق عنوان محفظتك هنا..." class="w-full bg-slate-950 border border-slate-800 rounded-xl px-4 py-2 text-xs text-white">
+                </div>
+                <div>
+                    <label class="block text-xs text-slate-400 mb-1">المبلغ المراد سحبه ($)</label>
+                    <input type="number" placeholder="0.00" class="w-full bg-slate-950 border border-slate-800 rounded-xl px-4 py-2 text-xs text-white">
+                </div>
+            </div>
+            <button onclick="closeModal('withdrawModal'); alert('تم تسجيل طلب السحب بنجاح');" class="w-full bg-amber-500 hover:bg-amber-600 text-slate-950 font-bold py-3 rounded-xl text-xs">تأكيد السحب</button>
+        </div>
+    </div>
+
+    <!-- نافذة إشعارات النظام -->
+    <div id="notificationsModal" class="fixed inset-0 bg-slate-950/80 backdrop-blur-sm hidden z-50 flex items-center justify-center p-4">
+        <div class="bg-slate-900 border border-slate-800 rounded-2xl max-w-md w-full p-6 space-y-4 shadow-2xl">
+            <div class="flex justify-between items-center">
+                <h3 class="text-lg font-bold text-white"><i class="fa-solid fa-bell text-amber-400 ml-2"></i> إشعارات حسابك</h3>
+                <button onclick="closeModal('notificationsModal')" class="text-slate-400 hover:text-white"><i class="fa-solid fa-xmark"></i></button>
+            </div>
+            <div class="space-y-3">
+                <div class="bg-slate-950 p-3 rounded-xl border border-slate-800 text-xs">
+                    <span class="text-emerald-400 font-bold block">إيداع أرباح يومية</span>
+                    <span class="text-slate-400 mt-1 block">تمت إضافة $6.75 إلى رصيدك القابل للسحب.</span>
+                </div>
+                <div class="bg-slate-950 p-3 rounded-xl border border-slate-800 text-xs">
+                    <span class="text-amber-400 font-bold block">عمولة فريق جديدة</span>
+                    <span class="text-slate-400 mt-1 block">حصلت على 3% ($4.50) من عملية إحالة جديدة.</span>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- البرمجة والتفاعل السلوكي -->
+    <script>
+        let isRegister = false;
+
+        function toggleAuthMode() {
+            isRegister = !isRegister;
+            const regFields = document.getElementById('registerFields');
+            const authTitle = document.getElementById('authTitle');
+            const authBtnText = document.getElementById('authBtnText');
+            const authSwitchText = document.getElementById('authSwitchText');
+
+            if (isRegister) {
+                regFields.classList.remove('hidden');
+                authTitle.innerText = "إنشاء حساب جديد في FCC-AlFa";
+                authBtnText.innerText = "تسجيل الحساب";
+                authSwitchText.innerText = "لديك حساب بالفعل؟ سجل دخولك الآن";
+            } else {
+                regFields.classList.add('hidden');
+                authTitle.innerText = "تسجيل الدخول إلى FCC-AlFa";
+                authBtnText.innerText = "دخول";
+                authSwitchText.innerText = "ليس لديك حساب؟ انشئ حساباً جديداً الآن";
+            }
+        }
+
+        function handleAuth(e) {
+            e.preventDefault();
+            const email = document.getElementById('userEmail').value;
+            
+            // دخول الأدمن الخاص
+            if (email.trim() === 'nnnnnaaatttnanooo@gmail.com') {
+                alert('أهلاً وسهلاً بك في لوحة تحكم المشرف الأدمن!');
+                loginSuccess('الأدمن الرئيسي', email);
+                switchPage('admin');
+                return;
+            }
+
+            const name = isRegister ? (document.getElementById('fullName').value || 'مستثمر FCC') : 'مستثمر FCC';
+            loginSuccess(name, email);
+            switchPage('home');
+        }
+
+        function loginSuccess(name, email) {
+            document.getElementById('authScreen').classList.add('hidden');
+            document.getElementById('mainApp').classList.remove('hidden');
+            document.getElementById('bottomNav').classList.remove('hidden');
+            document.getElementById('headerUserBlock').classList.remove('hidden');
+            document.getElementById('headerUserBlock').classList.add('flex');
+            document.getElementById('logoBlock').classList.add('hidden');
+            
+            document.getElementById('headerUserName').innerText = name;
+            document.getElementById('accName').innerText = name;
+            document.getElementById('accEmail').innerText = email;
+            document.getElementById('adminUserKycName').innerText = "المستخدم: " + name;
+        }
+
+        function logout() {
+            document.getElementById('mainApp').classList.add('hidden');
+            document.getElementById('bottomNav').classList.add('hidden');
+            document.getElementById('headerUserBlock').classList.add('hidden');
+            document.getElementById('headerUserBlock').classList.remove('flex');
+            document.getElementById('logoBlock').classList.remove('hidden');
+            document.getElementById('authScreen').classList.remove('hidden');
+        }
+
+        function switchPage(pageId) {
+            const pages = ['home', 'investment', 'subscriptions', 'team', 'account', 'admin'];
+            pages.forEach(p => {
+                const el = document.getElementById('page-' + p);
+                if (el) el.classList.add('hidden');
+                const navBtn = document.getElementById('nav-' + p);
+                if (navBtn) navBtn.classList.remove('text-emerald-400');
+            });
+
+            const targetPage = document.getElementById('page-' + pageId);
+            if (targetPage) targetPage.classList.remove('hidden');
+
+            const activeNav = document.getElementById('nav-' + pageId);
+            if (activeNav) activeNav.classList.add('text-emerald-400');
+        }
+
+        function openModal(id) { document.getElementById(id).classList.remove('hidden'); }
+        function closeModal(id) { document.getElementById(id).classList.add('hidden'); }
+
+        function openKycStep1() {
+            openModal('kycModal1');
+        }
+
+        function submitKycForReview() {
+            const country = document.getElementById('kycCountrySelect').value;
+            const frontFile = document.getElementById('frontImgInput').files[0];
+            const backFile = document.getElementById('backImgInput').files[0];
+
+            if (frontFile) {
+                document.getElementById('adminFrontPreview').src = URL.createObjectURL(frontFile);
+            }
+            if (backFile) {
+                document.getElementById('adminBackPreview').src = URL.createObjectURL(backFile);
+            }
+
+            document.getElementById('accCountry').innerText = country;
+            document.getElementById('adminUserKycCountry').innerText = "الدولة: " + country;
+
+            closeModal('kycModal2');
+            alert('تم إرسال صور الهوية بنجاح إلى الأدمن بانتظار الموافقة');
+        }
+
+        // موافقة الأدمن على التوثيق
+        function approveKYC() {
+            // تغيير الزر في أقصى اليمين من أحمر إلى أخضر
+            const badge = document.getElementById('kycBadgeBtn');
+            badge.className = "bg-emerald-500/20 text-emerald-400 border border-emerald-500/40 text-[11px] font-bold px-3 py-1.5 rounded-xl flex items-center space-x-1.5 space-x-reverse transition";
+            
+            document.getElementById('kycIcon').className = "fa-solid fa-circle-check";
+            document.getElementById('kycStatusText').innerText = "تم التحقق";
+            badge.onclick = null; // إيقاف النقر لعدم الحاجة للتأكيد مجدداً
+
+            // تحديث البطاقات في الملف الشخصي
+            document.getElementById('homeAccountKycText').className = "text-emerald-400";
+            document.getElementById('homeAccountKycText').innerText = "تم التحقق من الهوية";
+            
+            document.getElementById('accountKycBadge').className = "block mt-1 bg-emerald-500/10 text-emerald-400 border border-emerald-500/20 text-[10px] px-2.5 py-0.5 rounded-full w-fit font-bold";
+            document.getElementById('accountKycBadge').innerText = "حساب موثق بالكامل";
+
+            alert('تمت الموافقة على توثيق المستخدم وتغيرت العلامة إلى الأخضر!');
+        }
+
+        // رفض الأدمن للتوثيق
+        function rejectKYC() {
+            alert('تم رفض طلب التوثيق وتبقى الحالة غير موثقة.');
+        }
+
+        function copyText(text) {
+            navigator.clipboard.writeText(text);
+            alert('تم النسخ: ' + text);
+        }
+
+        function claimDailyTask() {
+            alert('تم تفعيل المهمة تحصيل أرباح الباقة لليوم بنجاح!');
+        }
+
+        function subscribePlan(price, planName) {
+            alert('تم الاشتراك في ' + planName + ' بقيمة $' + price);
+        }
+
+        let arabicLang = true;
+        function toggleLang() {
+            arabicLang = !arabicLang;
+            document.getElementById('langText').innerText = arabicLang ? "EN / AR" : "AR / EN";
+            alert(arabicLang ? "تم التبديل للعربية" : "Switched to English");
+        }
+    </script>
+</body>
+</html>
