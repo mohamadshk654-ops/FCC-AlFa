@@ -30,15 +30,12 @@
 
     <!-- أزرار الدعم الثلاثية المتنقلة عبر الصفحات (واتساب + فيسبوك + تلجرام) -->
     <div class="fixed bottom-20 left-4 z-50 flex flex-col space-y-2">
-        <!-- WhatsApp -->
         <a href="https://wa.me/" target="_blank" title="دعم واتساب" class="bg-emerald-500 text-white p-3 rounded-full shadow-2xl hover:scale-110 transition flex items-center justify-center border-2 border-slate-900 shadow-emerald-500/30">
             <i class="fa-brands fa-whatsapp text-xl"></i>
         </a>
-        <!-- Facebook -->
         <a href="https://facebook.com/" target="_blank" title="دعم فيسبوك" class="bg-blue-600 text-white p-3 rounded-full shadow-2xl hover:scale-110 transition flex items-center justify-center border-2 border-slate-900 shadow-blue-600/30">
             <i class="fa-brands fa-facebook-f text-xl"></i>
         </a>
-        <!-- Telegram -->
         <a href="https://t.me/" target="_blank" title="دعم تلجرام" class="bg-sky-500 text-white p-3 rounded-full shadow-2xl hover:scale-110 transition flex items-center justify-center border-2 border-slate-900 shadow-sky-500/30">
             <i class="fa-brands fa-telegram text-xl"></i>
         </a>
@@ -48,20 +45,17 @@
     <header class="bg-slate-900/90 backdrop-blur-md border-b border-slate-800 sticky top-0 z-40">
         <div class="max-w-7xl mx-auto px-4 py-3 flex justify-between items-center">
             
-            <!-- أعلى الزاوية اليمنى: اسم المستخدم وزر حالة التوثيق -->
             <div id="headerUserBlock" class="hidden items-center space-x-3 space-x-reverse">
                 <div class="bg-slate-800 p-2 rounded-xl border border-slate-700 flex items-center space-x-2 space-x-reverse">
                     <i class="fa-solid fa-user-circle text-amber-400 text-xl"></i>
                     <span id="headerUserName" class="text-xs font-bold text-white">المستخدم</span>
                 </div>
-                <!-- زر حالة التوثيق -->
                 <button id="kycBadgeBtn" onclick="openKycStep1()" class="bg-rose-500/20 hover:bg-rose-500/30 text-rose-400 border border-rose-500/40 text-[11px] font-bold px-3 py-1.5 rounded-xl flex items-center space-x-1.5 space-x-reverse transition shadow-lg shadow-rose-500/10">
                     <i id="kycIcon" class="fa-solid fa-triangle-exclamation"></i>
                     <span id="kycStatusText">لم يتم التحقق - اضغط للتحقق</span>
                 </button>
             </div>
 
-            <!-- اللوجو عند عدم تسجيل الدخول -->
             <div id="logoBlock" class="flex items-center space-x-2 space-x-reverse">
                 <div class="bg-gradient-to-tr from-amber-500 to-emerald-500 p-2 rounded-xl text-slate-950 font-black text-lg shadow-lg shadow-emerald-500/20">
                     <i class="fa-solid fa-chart-line"></i>
@@ -70,7 +64,6 @@
             </div>
 
             <div class="flex items-center space-x-3 space-x-reverse">
-                <!-- زر الانتقال للأدمن -->
                 <button id="adminPortalBtn" onclick="switchPage('admin')" class="hidden bg-amber-500/20 text-amber-400 border border-amber-500/40 px-3 py-1.5 rounded-lg text-xs font-bold hover:bg-amber-500/30 transition">
                     <i class="fa-solid fa-user-shield ml-1"></i> لوحة الأدمن
                 </button>
@@ -190,7 +183,7 @@
                         <i class="fa-solid fa-microchip"></i>
                     </div>
                     <h3 class="text-xl font-bold text-white">مهمة التعدين وتوليد الأرباح اليومية</h3>
-                    <p class="text-xs text-slate-400 max-w-md mx-auto">تتفعل المهمة مرة واحدة كل 24 ساعة من تاريخ وساعة نقرك للتفعيل بشرط أن تكون مشتركاً في إحدى الباقات الاستثمارية ورصيدك مفعل.</p>
+                    <p class="text-xs text-slate-400 max-w-md mx-auto">تتفعل المهمة مرة واحدة كل 24 ساعة بدقة تامة. العائد اليومي مرتبط حصرياً بنوع باقتك المشترك بها.</p>
                     
                     <div class="bg-slate-950 p-4 rounded-xl border border-slate-800 max-w-sm mx-auto">
                         <span class="text-xs text-slate-400 block">الوقت المتبقي حتى التفعيل القادم:</span>
@@ -207,7 +200,7 @@
             <div id="page-subscriptions" class="space-y-6 hidden">
                 <div class="text-center">
                     <h3 class="text-2xl font-black text-white">باقات الاستثمار المتاحة ($10 - $500)</h3>
-                    <p class="text-xs text-slate-400 mt-1">عوائد يومية تبدأ من 2% وتصل إلى 15% - تشترط وجود رصيد كافٍ بالحساب</p>
+                    <p class="text-xs text-slate-400 mt-1">عوائد يومية دقيقة حسب الباقة المشترك بها</p>
                 </div>
 
                 <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-5">
@@ -460,7 +453,7 @@
 
                     <!-- 3. قسم طلبات السحب -->
                     <div class="space-y-4 pt-4 border-t border-slate-800">
-                        <h4 class="text-sm font-bold text-white flex items-center"><i class="fa-solid fa-arrow-up-right-from-square text-amber-400 ml-2"></i> طلبات السحب المعلقة (تحتوي على شبكة وعنوان محفظة العميل)</h4>
+                        <h4 class="text-sm font-bold text-white flex items-center"><i class="fa-solid fa-arrow-up-right-from-square text-amber-400 ml-2"></i> طلبات السحب المعلقة</h4>
                         <div id="adminWithdrawSection" class="bg-slate-950 p-4 rounded-xl border border-slate-800 text-center">
                             <span class="text-xs text-slate-400" id="adminWithdrawEmptyText">لا توجد طلبات سحب معلقة حالياً</span>
 
@@ -532,9 +525,7 @@
         </div>
     </nav>
 
-    <!-- النوافذ المنبثقة MODALS -->
-
-    <!-- نافذة تكبير الصورة للأدمن -->
+    <!-- النوافذ المنبثقة -->
     <div id="imageZoomModal" class="fixed inset-0 bg-slate-950/95 backdrop-blur-md hidden z-50 flex items-center justify-center p-4" onclick="closeModal('imageZoomModal')">
         <div class="relative max-w-4xl w-full p-2 text-center" onclick="event.stopPropagation()">
             <button onclick="closeModal('imageZoomModal')" class="absolute -top-10 right-0 text-white text-xl bg-slate-800 p-2 rounded-full hover:bg-rose-500 transition"><i class="fa-solid fa-xmark"></i> إغلاق الصورة</button>
@@ -542,7 +533,6 @@
         </div>
     </div>
 
-    <!-- نافذة التوثيق Step 1 -->
     <div id="kycModal1" class="fixed inset-0 bg-slate-950/80 backdrop-blur-sm hidden z-50 flex items-center justify-center p-4">
         <div class="bg-slate-900 border border-slate-800 rounded-2xl max-w-md w-full p-6 space-y-4 shadow-2xl text-center">
             <div class="w-16 h-16 bg-amber-500/10 text-amber-400 rounded-full flex items-center justify-center mx-auto text-2xl border border-amber-500/20">
@@ -556,7 +546,6 @@
         </div>
     </div>
 
-    <!-- نافذة التوثيق Step 2 -->
     <div id="kycModal2" class="fixed inset-0 bg-slate-950/80 backdrop-blur-sm hidden z-50 flex items-center justify-center p-4">
         <div class="bg-slate-900 border border-slate-800 rounded-2xl max-w-md w-full p-6 space-y-4 shadow-2xl">
             <div class="flex justify-between items-center border-b border-slate-800 pb-3">
@@ -599,7 +588,6 @@
         </div>
     </div>
 
-    <!-- نافذة الإيداع التفاعلية -->
     <div id="depositModal" class="fixed inset-0 bg-slate-950/80 backdrop-blur-sm hidden z-50 flex items-center justify-center p-4">
         <div class="bg-slate-900 border border-slate-800 rounded-2xl max-w-md w-full p-6 space-y-4 shadow-2xl">
             <div class="flex justify-between items-center">
@@ -638,7 +626,6 @@
         </div>
     </div>
 
-    <!-- نافذة السحب المنبثقة -->
     <div id="withdrawModal" class="fixed inset-0 bg-slate-950/80 backdrop-blur-sm hidden z-50 flex items-center justify-center p-4">
         <div class="bg-slate-900 border border-slate-800 rounded-2xl max-w-md w-full p-6 space-y-4 shadow-2xl">
             <div class="flex justify-between items-center">
@@ -670,18 +657,25 @@
         </div>
     </div>
 
-    <!-- السكربت والتفاعل وتخزين البيانات عبر localStorage -->
+    <!-- السكربت البرمجي المحمي والمصحح بالكامل -->
     <script>
         let isRegister = false;
         let currentUser = JSON.parse(localStorage.getItem('fcc_user')) || null;
         let pendingDeposit = JSON.parse(localStorage.getItem('fcc_pending_dep')) || null;
         let pendingWithdraw = JSON.parse(localStorage.getItem('fcc_pending_with')) || null;
         let pendingKyc = JSON.parse(localStorage.getItem('fcc_pending_kyc')) || null;
+        let lastTaskTime = 0;
+        let taskInterval = null;
+
+        function getTaskTimeKey() {
+            return currentUser ? `fcc_last_task_time_${currentUser.email}` : 'fcc_last_task_time';
+        }
 
         window.onload = function() {
             if (currentUser) {
                 renderUserSession();
                 checkPendingAdminStates();
+                checkTaskTimerOnLoad();
             }
         };
 
@@ -746,6 +740,7 @@
                     email: email,
                     balance: 1500.00,
                     activePlans: 2,
+                    dailyPlanProfit: 7.00,
                     isAdmin: true
                 };
                 localStorage.setItem('fcc_user', JSON.stringify(currentUser));
@@ -763,6 +758,7 @@
                 email: email,
                 balance: currentUser ? currentUser.balance : 0,
                 activePlans: currentUser ? currentUser.activePlans : 0,
+                dailyPlanProfit: currentUser ? currentUser.dailyPlanProfit : 0.20,
                 isAdmin: false
             };
             localStorage.setItem('fcc_user', JSON.stringify(currentUser));
@@ -1063,14 +1059,43 @@
 
             currentUser.balance -= price;
             currentUser.activePlans += 1;
+            currentUser.dailyPlanProfit = dailyProfit; // ضبط دقيق لعائد الباقة اليومي فقط
             localStorage.setItem('fcc_user', JSON.stringify(currentUser));
             renderUserSession();
 
-            addHistoryLog("اشتراك في باقة", `تم الخصم والاشتراك في (${planName}) بقيمة $${price}`, "fa-solid fa-box-archive", "bg-indigo-500/10 text-indigo-400");
+            addHistoryLog("اشتراك في باقة", `تم الخصم والاشتراك في (${planName}) بقيمة $${price} (عائد يومي صحيح: $${dailyProfit})`, "fa-solid fa-box-archive", "bg-indigo-500/10 text-indigo-400");
             showToast(`تم الاشتراك بنجاح في ${planName}`);
         }
 
-        let taskInterval = null;
+        // نظام الحماية والعد التنازلي الحقيقي المقاوم لتحديث الصفحة
+        function checkTaskTimerOnLoad() {
+            const savedTime = localStorage.getItem(getTaskTimeKey());
+            lastTaskTime = savedTime ? parseInt(savedTime) : 0;
+            if (!lastTaskTime) return;
+
+            const now = Date.now();
+            const totalCooldownMs = 24 * 60 * 60 * 1000; // 24 ساعة
+            const elapsedMs = now - lastTaskTime;
+
+            if (elapsedMs < totalCooldownMs) {
+                const btn = document.getElementById('taskBtn');
+                if (btn) {
+                    btn.disabled = true;
+                    btn.classList.add('opacity-50', 'cursor-not-allowed');
+                }
+                let remainingSeconds = Math.floor((totalCooldownMs - elapsedMs) / 1000);
+                startCountdownClock(remainingSeconds);
+            } else {
+                lastTaskTime = 0;
+                localStorage.removeItem(getTaskTimeKey());
+                const btn = document.getElementById('taskBtn');
+                if (btn) {
+                    btn.disabled = false;
+                    btn.classList.remove('opacity-50', 'cursor-not-allowed');
+                }
+            }
+        }
+
         function claimDailyTask() {
             if (!currentUser || currentUser.activePlans < 1) {
                 alert("لا يمكنك تفعيل المهمة اليومية إلا بعد الإيداع والاشتراك في إحدى الباقات الاستثمارية!");
@@ -1078,11 +1103,27 @@
                 return;
             }
 
+            const savedTime = localStorage.getItem(getTaskTimeKey());
+            lastTaskTime = savedTime ? parseInt(savedTime) : 0;
+            const now = Date.now();
+            const totalCooldownMs = 24 * 60 * 60 * 1000;
+
+            if (lastTaskTime && (now - lastTaskTime) < totalCooldownMs) {
+                const remSecs = Math.floor((totalCooldownMs - (now - lastTaskTime)) / 1000);
+                const hrs = Math.floor(remSecs / 3600);
+                const mins = Math.floor((remSecs % 3600) / 60);
+                alert(`المهمة مفعلة مسبقاً! يرجى الانتظار ${hrs} ساعة و ${mins} دقيقة حتى انتهاء الـ 24 ساعة.`);
+                return;
+            }
+
+            lastTaskTime = now;
+            localStorage.setItem(getTaskTimeKey(), lastTaskTime);
+
             const btn = document.getElementById('taskBtn');
             btn.disabled = true;
             btn.classList.add('opacity-50', 'cursor-not-allowed');
 
-            const taskProfit = 5.00;
+            const taskProfit = currentUser.dailyPlanProfit || 0.20; // العائد اليومي الصحيح للباقة
             currentUser.balance += taskProfit;
             localStorage.setItem('fcc_user', JSON.stringify(currentUser));
             renderUserSession();
@@ -1090,23 +1131,32 @@
             document.getElementById('todayEarnings').innerText = `$${taskProfit.toFixed(2)}`;
 
             addHistoryLog("تفعيل مهمة التعدين", `تم تفعيل المهمة اليومية وإضافة ربح بقيمة $${taskProfit.toFixed(2)}`, "fa-solid fa-bolt", "bg-emerald-500/10 text-emerald-400");
-            showToast("تم تفعيل المهمة وتحصيل الأرباح بنجاح!");
+            showToast(`تم تفعيل المهمة وتحصيل ربح $${taskProfit.toFixed(2)} بنجاح!`);
 
-            let totalSeconds = 24 * 60 * 60;
+            startCountdownClock(24 * 60 * 60);
+        }
+
+        function startCountdownClock(durationSeconds) {
             if (taskInterval) clearInterval(taskInterval);
+            let totalSecs = durationSeconds;
 
             taskInterval = setInterval(() => {
-                totalSeconds--;
-                if (totalSeconds <= 0) {
+                totalSecs--;
+                if (totalSecs <= 0) {
                     clearInterval(taskInterval);
-                    btn.disabled = false;
-                    btn.classList.remove('opacity-50', 'cursor-not-allowed');
+                    lastTaskTime = 0;
+                    localStorage.removeItem(getTaskTimeKey());
+                    const btn = document.getElementById('taskBtn');
+                    if (btn) {
+                        btn.disabled = false;
+                        btn.classList.remove('opacity-50', 'cursor-not-allowed');
+                    }
                     document.getElementById('countdownTimer').innerText = "24:00:00";
                     return;
                 }
-                const hrs = Math.floor(totalSeconds / 3600);
-                const mins = Math.floor((totalSeconds % 3600) / 60);
-                const secs = totalSeconds % 60;
+                const hrs = Math.floor(totalSecs / 3600);
+                const mins = Math.floor((totalSecs % 3600) / 60);
+                const secs = totalSecs % 60;
                 document.getElementById('countdownTimer').innerText = 
                     `${hrs.toString().padStart(2, '0')}:${mins.toString().padStart(2, '0')}:${secs.toString().padStart(2, '0')}`;
             }, 1000);
