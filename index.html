@@ -198,7 +198,7 @@
                 </div>
             </div>
 
-            <!-- صفحة 4: الفريق والإحالات (محدث بالكامل) -->
+            <!-- صفحة 4: الفريق والإحالات -->
             <div id="page-team" class="space-y-6 hidden">
                 <div class="bg-slate-900 border border-slate-800 rounded-2xl p-6 space-y-4 shadow-xl">
                     <h3 class="text-xl font-bold text-white"><i class="fa-solid fa-users ml-2 text-emerald-400"></i> نظام الفريق والإحالات العالمي</h3>
@@ -325,10 +325,10 @@
         </div>
     </div>
 
-    <!-- كود السكربت السحابي المدعوم بنظام الإحالات التلقائي -->
+    <!-- كود السكربت السحابي المربوط بمفتاح الأمان التقليدي (Legacy Anon Key) -->
     <script>
         const SUPABASE_URL = 'https://xihdxiywwvjpgrwvabpl.supabase.co';
-        const SUPABASE_ANON_KEY = 'Sb_publishable_5po41yGcsPVpNkzVlvZk8A_d4uOKdi5';
+        const SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InhpaGR4aXl3d3ZqcGdyd3ZhYnBsIiwicm9sZSI6ImFub24iLCJpYXQiOjE3OTIyMzgyNTgsImV4cCI6MjEwNzgxNDI1OH0.PUgKx8kmI3n5dHqHHZ4Q9CLfYEXtQyVYaeBfEW4P7l4';
         const supabase = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
 
         let currentUser = JSON.parse(localStorage.getItem('fcc_user')) || null;
@@ -340,7 +340,6 @@
 
         window.onload = async function() {
             if (refParam) {
-                // إذا كان هناك رابط إحالة، نظهر شاشة التسجيل مباشرة ونعلم المستخدم
                 isRegister = true;
                 document.getElementById('registerFields').classList.remove('hidden');
                 document.getElementById('authTitle').innerText = "إنشاء حساب عبر دعوة صديق";
@@ -381,7 +380,7 @@
             const name = isRegister ? (document.getElementById('fullName').value || 'مستثمر عالمي') : 'مستثمر FCC';
             const isAdmin = (email === 'nnnnaaatttnanooo@gmail.com');
 
-            let { data: existingUser } = await supabase.from('users').select('*').eq('email', email).single();
+            let { data: existingUser, error } = await supabase.from('users').select('*').eq('email', email).single();
 
             if (!existingUser) {
                 const newUser = {
@@ -392,9 +391,13 @@
                     daily_plan_profit: isAdmin ? 7.00 : 0.20,
                     is_verified: isAdmin,
                     is_admin: isAdmin,
-                    referred_by: refParam || null // حفظ الشخص الذي دعاه
+                    referred_by: refParam || null
                 };
-                await supabase.from('users').insert([newUser]);
+                const { error: insertErr } = await supabase.from('users').insert([newUser]);
+                if (insertErr) {
+                    alert("خطأ في الاتصال بقاعدة البيانات: " + insertErr.message);
+                    return;
+                }
                 currentUser = newUser;
                 await addLog("إنشاء الحساب", "تم تسجيلك بنجاح في المنصة العالمية", "fa-solid fa-user-plus", "bg-blue-500/10 text-blue-400");
             } else {
@@ -598,13 +601,10 @@
             await supabase.from('requests').update({ status: 'approved' }).eq('id', reqId);
 
             if (type === 'deposit') {
-                // 1. جلب بيانات المستخدم صاحب الإيداع
                 const { data: targetUser } = await supabase.from('users').select('*').eq('email', targetEmail).single();
                 const newBalance = Number(targetUser.balance) + Number(amount);
                 await supabase.from('users').update({ balance: newBalance }).eq('email', targetEmail);
                 
-                // تسجيل عملية الإيداع للمستخدم
-                // (ملاحظة: دالة addLog تستخدم currentUser الحالي، لذا نحدث المستخدم المستهدف مباشرة في السجل إن لزم أو عبر روتين مستقل)
                 await supabase.from('logs').insert([{
                     user_email: targetEmail,
                     title: "تأكيد إيداع ورصيد",
@@ -613,17 +613,15 @@
                     color_class: "bg-emerald-500/10 text-emerald-400"
                 }]);
 
-                // 2. فحص هل لديه شخص دعاه؟ لإعطائه مكافأة الـ 3%
                 if (targetUser.referred_by) {
                     const refEmail = targetUser.referred_by;
-                    const commission = Number(amount) * 0.03; // 3% مكافأة إحالة
+                    const commission = Number(amount) * 0.03;
 
                     const { data: referrerUser } = await supabase.from('users').select('*').eq('email', refEmail).single();
                     if (referrerUser) {
                         const newRefBalance = Number(referrerUser.balance) + commission;
                         await supabase.from('users').update({ balance: newRefBalance }).eq('email', refEmail);
 
-                        // إضافة سجل للداعي بمكافأة الفريق
                         await supabase.from('logs').insert([{
                             user_email: refEmail,
                             title: "عمولة فريق (إحالة)",
