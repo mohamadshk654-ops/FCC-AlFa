@@ -14,12 +14,6 @@
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <style>
         body { font-family: 'Cairo', sans-serif; }
-        @keyframes ticker {
-            0% { transform: translateX(0); }
-            100% { transform: translateX(-50%); }
-        }
-        .ticker-wrap { overflow: hidden; white-space: nowrap; }
-        .ticker-move { display: inline-block; animation: ticker 25s linear infinite; }
     </style>
 </head>
 <body class="bg-slate-950 text-slate-100 min-h-screen flex flex-col selection:bg-emerald-500 selection:text-slate-950 relative">
@@ -69,9 +63,6 @@
                 <button id="adminPortalBtn" onclick="switchPage('admin')" class="hidden bg-amber-500/20 text-amber-400 border border-amber-500/40 px-3 py-1.5 rounded-lg text-xs font-bold hover:bg-amber-500/30 transition">
                     <i class="fa-solid fa-user-shield ml-1"></i> لوحة الأدمن
                 </button>
-                <button onclick="toggleLang()" class="bg-slate-800 hover:bg-slate-700 px-3 py-1.5 rounded-lg text-xs font-bold text-amber-400 border border-slate-700 transition">
-                    <i class="fa-solid fa-globe ml-1"></i> <span id="langText">EN / AR</span>
-                </button>
             </div>
         </div>
     </header>
@@ -85,6 +76,9 @@
             <div class="text-center mb-6">
                 <h2 id="authTitle" class="text-2xl font-black text-white mb-2">تسجيل الدخول إلى FCC-AlFa</h2>
                 <p class="text-slate-400 text-xs">مرحباً بك في عالم الاستثمار الذكي العالمي</p>
+                <div id="invitedNotice" class="hidden mt-3 bg-emerald-500/10 border border-emerald-500/30 text-emerald-400 text-xs p-2.5 rounded-xl">
+                    <i class="fa-solid fa-gift ml-1"></i> أنت تسجل عبر رابط دعوة صديق!
+                </div>
             </div>
 
             <form id="authForm" onsubmit="handleAuth(event)" class="space-y-4">
@@ -151,7 +145,7 @@
                     </div>
                     <div class="bg-slate-900 border border-slate-800 p-4 rounded-2xl">
                         <span class="text-[11px] text-slate-400 block">أرباح الفريق</span>
-                        <span class="text-lg font-bold text-amber-400 mt-1 block">$0.00</span>
+                        <span class="text-lg font-bold text-amber-400 mt-1 block" id="teamEarningsTotal">$0.00</span>
                     </div>
                 </div>
             </div>
@@ -204,11 +198,19 @@
                 </div>
             </div>
 
-            <!-- صفحة 4: الفريق -->
+            <!-- صفحة 4: الفريق والإحالات (محدث بالكامل) -->
             <div id="page-team" class="space-y-6 hidden">
-                <div class="bg-slate-900 border border-slate-800 rounded-2xl p-6 text-center space-y-4">
-                    <h3 class="text-xl font-bold text-white">نظام الفريق والإحالات العالمي</h3>
-                    <p class="text-xs text-slate-400">شارك رابط إحالتك واكسب 3% عمولة فورية من إيداعات أصدقائك.</p>
+                <div class="bg-slate-900 border border-slate-800 rounded-2xl p-6 space-y-4 shadow-xl">
+                    <h3 class="text-xl font-bold text-white"><i class="fa-solid fa-users ml-2 text-emerald-400"></i> نظام الفريق والإحالات العالمي</h3>
+                    <p class="text-xs text-slate-400">شارك رابط إحالتك الفريد مع أصدقائك، واكسب <strong>3% عمولة فورية</strong> من كل عملية إيداع يقومون بها!</p>
+                    
+                    <div class="bg-slate-950 p-4 rounded-xl border border-slate-800 space-y-2">
+                        <label class="block text-xs text-slate-400">رابط الإحالة الخاص بك:</label>
+                        <div class="flex space-x-2 space-x-reverse">
+                            <input type="text" id="referralLinkInput" readonly class="w-full bg-slate-900 border border-slate-800 rounded-xl px-3 py-2 text-xs text-emerald-400 font-mono">
+                            <button onclick="copyReferralLink()" class="bg-emerald-500 hover:bg-emerald-600 text-slate-950 font-bold px-4 py-2 rounded-xl text-xs transition">نسخ</button>
+                        </div>
+                    </div>
                 </div>
             </div>
 
@@ -229,12 +231,11 @@
                 </div>
             </div>
 
-            <!-- صفحة 7: لوحة تحكم الأدمن (nnnnaaatttnanooo@gmail.com) -->
+            <!-- صفحة 7: لوحة تحكم الأدمن -->
             <div id="page-admin" class="space-y-6 hidden">
                 <div class="bg-slate-900 border border-amber-500/30 rounded-2xl p-6 space-y-6 shadow-2xl">
                     <h3 class="text-xl font-bold text-amber-400"><i class="fa-solid fa-user-shield ml-2"></i> لوحة تحكم الأدمن العالمية</h3>
                     
-                    <!-- طلبات التوثيق -->
                     <div class="space-y-3">
                         <h4 class="text-sm font-bold text-white">طلبات توثيق الهوية (KYC)</h4>
                         <div id="adminKycSection" class="bg-slate-950 p-4 rounded-xl border border-slate-800 text-center">
@@ -242,7 +243,6 @@
                         </div>
                     </div>
 
-                    <!-- طلبات الإيداع -->
                     <div class="space-y-3 pt-4 border-t border-slate-800">
                         <h4 class="text-sm font-bold text-white">طلبات الإيداع المعلقة من جميع أنحاء العالم</h4>
                         <div id="adminDepositSection" class="bg-slate-950 p-4 rounded-xl border border-slate-800 text-center">
@@ -250,7 +250,6 @@
                         </div>
                     </div>
 
-                    <!-- طلبات السحب -->
                     <div class="space-y-3 pt-4 border-t border-slate-800">
                         <h4 class="text-sm font-bold text-white">طلبات السحب المعلقة</h4>
                         <div id="adminWithdrawSection" class="bg-slate-950 p-4 rounded-xl border border-slate-800 text-center">
@@ -326,7 +325,7 @@
         </div>
     </div>
 
-    <!-- كود السكربت السحابي المربوط بـ Supabase مباشرة -->
+    <!-- كود السكربت السحابي المدعوم بنظام الإحالات التلقائي -->
     <script>
         const SUPABASE_URL = 'https://xihdxiywwvjpgrwvabpl.supabase.co';
         const SUPABASE_ANON_KEY = 'Sb_publishable_5po41yGcsPVpNkzVlvZk8A_d4uOKdi5';
@@ -335,7 +334,20 @@
         let currentUser = JSON.parse(localStorage.getItem('fcc_user')) || null;
         let isRegister = false;
 
+        // التقاط رابط الإحالة من الرابط إن وجد (مثل ?ref=email@domain.com)
+        const urlParams = new URLSearchParams(window.location.search);
+        const refParam = urlParams.get('ref');
+
         window.onload = async function() {
+            if (refParam) {
+                // إذا كان هناك رابط إحالة، نظهر شاشة التسجيل مباشرة ونعلم المستخدم
+                isRegister = true;
+                document.getElementById('registerFields').classList.remove('hidden');
+                document.getElementById('authTitle').innerText = "إنشاء حساب عبر دعوة صديق";
+                document.getElementById('authBtnText').innerText = "تسجيل الحساب";
+                document.getElementById('invitedNotice').classList.remove('hidden');
+            }
+
             if (currentUser) {
                 await refreshUserData();
                 renderUserSession();
@@ -367,10 +379,8 @@
             e.preventDefault();
             const email = document.getElementById('userEmail').value.trim();
             const name = isRegister ? (document.getElementById('fullName').value || 'مستثمر عالمي') : 'مستثمر FCC';
-            
             const isAdmin = (email === 'nnnnaaatttnanooo@gmail.com');
 
-            // تحقق أو أنشئ المستخدم في Supabase
             let { data: existingUser } = await supabase.from('users').select('*').eq('email', email).single();
 
             if (!existingUser) {
@@ -381,7 +391,8 @@
                     active_plans: isAdmin ? 2 : 0,
                     daily_plan_profit: isAdmin ? 7.00 : 0.20,
                     is_verified: isAdmin,
-                    is_admin: isAdmin
+                    is_admin: isAdmin,
+                    referred_by: refParam || null // حفظ الشخص الذي دعاه
                 };
                 await supabase.from('users').insert([newUser]);
                 currentUser = newUser;
@@ -413,6 +424,11 @@
             document.getElementById('withdrawBalance').innerText = Number(currentUser.balance).toFixed(2);
             document.getElementById('activePlansCount').innerText = currentUser.active_plans;
 
+            // توليد وعرض رابط الإحالة الخاص بالمستخدم في صفحة الفريق
+            const myRefLink = window.location.origin + window.location.pathname + '?ref=' + currentUser.email;
+            const refInput = document.getElementById('referralLinkInput');
+            if(refInput) refInput.value = myRefLink;
+
             if (currentUser.is_verified) {
                 document.getElementById('kycStatusText').innerText = "تم التحقق";
                 document.getElementById('homeAccountKycText').className = "text-emerald-400";
@@ -421,6 +437,14 @@
             if (currentUser.is_admin) {
                 document.getElementById('adminPortalBtn').classList.remove('hidden');
             }
+        }
+
+        function copyReferralLink() {
+            const refInput = document.getElementById('referralLinkInput');
+            refInput.select();
+            refInput.setSelectionRange(0, 99999);
+            navigator.clipboard.writeText(refInput.value);
+            showToast("تم نسخ رابط الإحالة بنجاح!");
         }
 
         function logout() {
@@ -479,7 +503,6 @@
             });
         }
 
-        // إرسال طلب التوثيق للسحابة
         async function submitKycForReview() {
             const country = document.getElementById('kycCountrySelect').value;
             await supabase.from('requests').insert([{
@@ -492,7 +515,6 @@
             showToast("تم إرسال طلب التوثيق بنجاح!");
         }
 
-        // إرسال طلب الإيداع للسحابة
         async function submitDepositRequest() {
             const amt = parseFloat(document.getElementById('depositAmountInput').value);
             const net = document.getElementById('depositNetworkSelect').value;
@@ -509,7 +531,6 @@
             showToast("تم إرسال طلب الإيداع للأدمن عالمياً!");
         }
 
-        // إرسال طلب السحب للسحابة
         async function handleWithdrawSubmit() {
             const amt = parseFloat(document.getElementById('withdrawAmtInput').value);
             const net = document.getElementById('withdrawNetworkSelect').value;
@@ -532,7 +553,6 @@
             showToast("تم إرسال طلب السحب للأدمن!");
         }
 
-        // تحميل الطلبات في لوحة الأدمن من أي مكان بالعالم
         async function loadAdminRequests() {
             if (!currentUser || !currentUser.is_admin) return;
             const { data: requests } = await supabase.from('requests').select('*').eq('status', 'pending');
@@ -544,7 +564,7 @@
             kycSec.innerHTML = ''; depSec.innerHTML = ''; withSec.innerHTML = '';
 
             if (!requests || requests.length === 0) {
-                kycSec.innerHTML = `<span class="text-xs text-slate-400">لا توجد طلبات معلقة حالياً</span>`;
+                kycSec.innerHTML = `<span class="text-xs text-slate-400">لا توجد طلبات توثيق معلقة حالياً</span>`;
                 depSec.innerHTML = `<span class="text-xs text-slate-400">لا توجد طلبات إيداع معلقة حالياً</span>`;
                 withSec.innerHTML = `<span class="text-xs text-slate-400">لا توجد طلبات سحب معلقة حالياً</span>`;
                 return;
@@ -573,21 +593,59 @@
             });
         }
 
-        // موافقة الأدمن وتحديث بيانات المستخدم العالمي
+        // موافقة الأدمن وتحديث الرصيد وتوزيع مكافأة الإحالة (3%) تلقائياً
         async function approveRequest(reqId, type, targetEmail, amount) {
             await supabase.from('requests').update({ status: 'approved' }).eq('id', reqId);
 
             if (type === 'deposit') {
+                // 1. جلب بيانات المستخدم صاحب الإيداع
                 const { data: targetUser } = await supabase.from('users').select('*').eq('email', targetEmail).single();
                 const newBalance = Number(targetUser.balance) + Number(amount);
                 await supabase.from('users').update({ balance: newBalance }).eq('email', targetEmail);
-                await addLog("تأكيد إيداع ورصيد", `تمت إضافة $${amount} لرصيدك بعد موافقة الأدمن`, "fa-solid fa-circle-dollar-to-slot", "bg-emerald-500/10 text-emerald-400");
+                
+                // تسجيل عملية الإيداع للمستخدم
+                // (ملاحظة: دالة addLog تستخدم currentUser الحالي، لذا نحدث المستخدم المستهدف مباشرة في السجل إن لزم أو عبر روتين مستقل)
+                await supabase.from('logs').insert([{
+                    user_email: targetEmail,
+                    title: "تأكيد إيداع ورصيد",
+                    desc: `تمت إضافة $${amount} لرصيدك بعد موافقة الأدمن`,
+                    icon_class: "fa-solid fa-circle-dollar-to-slot",
+                    color_class: "bg-emerald-500/10 text-emerald-400"
+                }]);
+
+                // 2. فحص هل لديه شخص دعاه؟ لإعطائه مكافأة الـ 3%
+                if (targetUser.referred_by) {
+                    const refEmail = targetUser.referred_by;
+                    const commission = Number(amount) * 0.03; // 3% مكافأة إحالة
+
+                    const { data: referrerUser } = await supabase.from('users').select('*').eq('email', refEmail).single();
+                    if (referrerUser) {
+                        const newRefBalance = Number(referrerUser.balance) + commission;
+                        await supabase.from('users').update({ balance: newRefBalance }).eq('email', refEmail);
+
+                        // إضافة سجل للداعي بمكافأة الفريق
+                        await supabase.from('logs').insert([{
+                            user_email: refEmail,
+                            title: "عمولة فريق (إحالة)",
+                            desc: `استلمت مكافأة 3% بقيمة $${commission.toFixed(2)} من إيداع العضو ${targetEmail}`,
+                            icon_class: "fa-solid fa-users",
+                            color_class: "bg-amber-500/10 text-amber-400"
+                        }]);
+                    }
+                }
+
             } else if (type === 'kyc') {
                 await supabase.from('users').update({ is_verified: true }).eq('email', targetEmail);
-                await addLog("توثيق الحساب", "تم توثيق هويتك بنجاح من قبل الأدمن", "fa-solid fa-circle-check", "bg-emerald-500/10 text-emerald-400");
+                await supabase.from('logs').insert([{
+                    user_email: targetEmail,
+                    title: "توثيق الحساب",
+                    desc: "تم توثيق هويتك بنجاح من قبل الأدمن",
+                    icon_class: "fa-solid fa-circle-check",
+                    color_class: "bg-emerald-500/10 text-emerald-400"
+                }]);
             }
 
-            showToast("تمت الموافقة بنجاح وتم تحديث حساب المستخدم عالمياً!");
+            showToast("تمت الموافقة وتوزيع أرباح الإحالة (3%) تلقائياً!");
             loadAdminRequests();
         }
 
